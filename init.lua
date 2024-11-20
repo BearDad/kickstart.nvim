@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -102,14 +102,13 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
 
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
-
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
 --  Remove this option if you want your OS clipboard to remain independent.
@@ -129,7 +128,7 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 
 -- Keep signcolumn on by default
-vim.opt.signcolumn = 'yes'
+vim.opt.signcolumn = 'auto'
 
 -- Decrease update time
 vim.opt.updatetime = 250
@@ -155,7 +154,7 @@ vim.opt.inccommand = 'split'
 vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 10
+vim.opt.scrolloff = 15
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -176,10 +175,10 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- TIP: Disable arrow keys in normal mode
--- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
--- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
--- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
--- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
+vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
+vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
+vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -255,7 +254,6 @@ require('lazy').setup({
       },
     },
   },
-
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
   -- This is often very useful to both group configuration, as well as handle
@@ -270,7 +268,6 @@ require('lazy').setup({
   -- Then, because we use the `config` key, the configuration only runs
   -- after the plugin has been loaded:
   --  config = function() ... end
-
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
@@ -870,14 +867,12 @@ require('lazy').setup({
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
-      require('mini.surround').setup()
-
-      -- Simple and easy statusline.
+      require('mini.surround').setup() -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
       local statusline = require 'mini.statusline'
       -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      statusline.setup { use_icons = true }
 
       -- You can configure sections in the statusline by overriding their
       -- default behavior. For example, here we set the section for
@@ -891,6 +886,54 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
+  {
+    'saghen/blink.cmp',
+    lazy = false, -- lazy loading handled internally
+    -- optional: provides snippets for the snippet source
+    dependencies = 'rafamadriz/friendly-snippets',
+
+    -- use a release tag to download pre-built binaries
+    version = 'v0.*',
+    -- OR build from source, requires nightly: https://rust-lang.github.io/rustup/concepts/channels.html#working-with-nightly-rust
+    -- build = 'cargo build --release',
+    -- If you use nix, you can build from source using latest nightly rust with:
+    -- build = 'nix run .#build-plugin',
+
+    ---@module 'blink.cmp'
+    ---@type blink.cmp.Config
+    opts = {
+      -- 'default' for mappings similar to built-in completion
+      -- 'super-tab' for mappings similar to vscode (tab to accept, arrow keys to navigate)
+      -- 'enter' for mappings similar to 'super-tab' but with 'enter' to accept
+      -- see the "default configuration" section below for full documentation on how to define
+      -- your own keymap. when defining your own, no keybinds will be assigned automatically.
+      keymap = 'enter',
+
+      highlight = {
+        -- sets the fallback highlight groups to nvim-cmp's highlight groups
+        -- useful for when your theme doesn't support blink.cmp
+        -- will be removed in a future release, assuming themes add support
+        use_nvim_cmp_as_default = true,
+      },
+      -- set to 'mono' for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
+      -- adjusts spacing to ensure icons are aligned
+      nerd_font_variant = 'normal',
+
+      -- experimental auto-brackets support
+      -- accept = { auto_brackets = { enabled = true } }
+
+      -- experimental signature help support
+      -- trigger = { signature_help = { enabled = true } }
+    },
+  },
+
+  -- LSP servers and clients communicate what features they support through "capabilities".
+  --  By default, Neovim support a subset of the LSP specification.
+  --  With blink.cmp, Neovim has *more* capabilities which are communicated to the LSP servers.
+  --  Explanation from TJ: https://youtu.be/m8C0Cq9Uv9o?t=1275
+  --
+  -- This can vary by config, but in-general for nvim-lspconfig:
+
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
@@ -926,18 +969,18 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
+  --  require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
@@ -967,3 +1010,124 @@ require('lazy').setup({
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+--
+-- NOTE: THIS IS ROSEPINE CONFIG
+--
+require('rose-pine').setup {
+  variant = 'main', -- auto, main, moon, or dawn
+  dark_variant = 'main', -- main, moon, or dawn
+  dim_inactive_windows = false,
+  extend_background_behind_borders = true,
+
+  enable = {
+    terminal = true,
+    legacy_highlights = true, -- Improve compatibility for previous versions of Neovim
+    migrations = true, -- Handle deprecated options automatically
+  },
+
+  styles = {
+    bold = true,
+    italic = true,
+    transparency = true,
+  },
+
+  groups = {
+    border = 'muted',
+    link = 'iris',
+    panel = 'surface',
+
+    error = 'love',
+    hint = 'iris',
+    info = 'foam',
+    note = 'pine',
+    todo = 'rose',
+    warn = 'gold',
+
+    git_add = 'foam',
+    git_change = 'rose',
+    git_delete = 'love',
+    git_dirty = 'rose',
+    git_ignore = 'muted',
+    git_merge = 'iris',
+    git_rename = 'pine',
+    git_stage = 'iris',
+    git_text = 'rose',
+    git_untracked = 'subtle',
+
+    h1 = 'iris',
+    h2 = 'foam',
+    h3 = 'rose',
+    h4 = 'gold',
+    h5 = 'pine',
+    h6 = 'foam',
+  },
+
+  palette = {
+    -- Override the builtin palette per variant
+    moon = {
+      base = '#18191a',
+      overlay = '#363738',
+    },
+  },
+
+  highlight_groups = {
+    Comment = { fg = 'foam' },
+    VertSplit = { fg = 'muted', bg = 'muted' },
+  },
+
+  before_highlight = function(group, highlight, palette)
+    -- Disable all undercurls
+    -- if highlight.undercurl then
+    --     highlight.undercurl = false
+    -- end
+    --
+    -- Change palette colour
+    -- if highlight.fg == palette.pine then
+    --     highlight.fg = palette.foam
+    -- end
+  end,
+}
+
+vim.cmd 'colorscheme rose-pine'
+-- vim.cmd("colorscheme rose-pine-main")
+-- vim.cmd("colorscheme rose-pine-moon")
+-- vim.cmd("colorscheme rose-pine-dawn")
+--
+--
+--
+--
+--
+-- NOTE: This are my personal keybinds
+--
+vim.g.vimtex_view_method = ''
+vim.g.vimtex_compiler_method = 'latexmk'
+vim.opt.guicursor = 'a:block'
+
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv", { desc = 'Move down' })
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv", { desc = 'Move up' })
+
+vim.keymap.set('n', '<leader>n', '<cmd>NerdIcons<cr>', { desc = 'Open NerdIcons' })
+vim.keymap.set({ 'n', 'v' }, '<C-p>', '"*p', { desc = 'Paste from selection clipboard' })
+vim.keymap.set({ 'n', 'v' }, 'p', '"+p', { desc = 'Paste from system clipboard' })
+vim.keymap.set({ 'v', 'n' }, '<leader>t', '<cmd>TSBufToggle highlight<cr>', { desc = 'Toggle Tree-sitter highlighting' })
+vim.keymap.set('n', '<leader>z', ":!zathura <C-r>=expand('%:r')<cr>.pdf &<cr>", { desc = 'Open PDF' })
+
+vim.keymap.set({ 'n' }, '<leader>p', function()
+  local file_name = vim.fn.expand '%:t'
+  if file_name ~= '' then
+    -- Open Explorer in the current directory and select the file
+    vim.fn.system { 'explorer.exe', '/select,', file_name }
+  else
+    print 'No file name found. Save the buffer first.'
+  end
+end, { desc = 'Open file location in Explorer' })
+
+vim.keymap.set({ 'n' }, '<leader>o', function()
+  local file_name = vim.fn.expand '%:t'
+  if file_name ~= '' then
+    -- Open Explorer in the current directory and select the file
+    vim.fn.system { 'explorer.exe', file_name }
+  else
+    print 'No file found. Make sure the buffer is saved.'
+  end
+end, { desc = 'Open file ' })
