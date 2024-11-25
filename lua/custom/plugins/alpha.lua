@@ -104,6 +104,7 @@ return {
       dashboard.button('u', '󱐥  Update plugins', '<cmd>Lazy update<CR>'),
       dashboard.button('c', '  Settings', ':e $HOME/.config/nvim/init.lua<CR>'),
       dashboard.button('p', '  Projects', ':e $HOME/git <CR>'),
+      dashboard.button('<C-p>', '  Clase', ':e $HOME/obsidian/Clase/ <CR>'),
       dashboard.button('d', '󱗼  Dotfiles', ':e $HOME/.dotfiles <CR>'),
       dashboard.button('q', '󰿅  Quit', '<cmd>qa<CR>'),
     }
