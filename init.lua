@@ -1393,5 +1393,6 @@ require('colorizer').setup {
   user_commands = true, -- Enable all or some usercommands
 }
 
+vim.opt.termguicolors = true
 vim.api.nvim_set_hl(0, 'CursorLine', { bg = '#191724' }) -- Use a darker or blended color
 vim.wo.relativenumber = true
