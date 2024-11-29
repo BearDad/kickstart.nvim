@@ -83,7 +83,7 @@ return {
     end
 
     -- Calculate padding for centering the greeting
-    local logoWidth = logo:find '\n' - 1 -- Assuming the logo width is the width of the first line
+    local logoWidth = logo:find '\n' - 18 -- Assuming the logo width is the width of the first line
     local greetingWidth = #greeting
     local padding = math.floor((logoWidth - greetingWidth) / 2)
 
