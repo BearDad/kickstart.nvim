@@ -185,7 +185,7 @@ vim.diagnostic.config {
   virtual_lines = false, -- Text shows up underneath the line, with virtual lines
 
   -- Auto open the float, so you can easily read the errors when jumping with `[d` and `]d`
-  jump = { float = true },
+  jump = { on_jump = true },
 }
 
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
@@ -782,6 +782,7 @@ require('lazy').setup({
     'saghen/blink.cmp',
     event = 'VimEnter',
     version = '1.*',
+    build = "cargo build --release",
     dependencies = {
       -- Snippet Engine
       {
@@ -1188,18 +1189,22 @@ vim.keymap.set('n', '<leader>wd', '<C-W>c', { desc = 'Delete Window', remap = tr
 
 -- native snippets
 if vim.fn.has 'nvim-0.11' == 0 then
-  vim.keymap.set('s', '<Tab>', function()
-    return vim.snippet.active { direction = 1 } and '<cmd>lua vim.snippet.jump(1)<cr>' or '<Tab>'
-  end, { expr = true, desc = 'Jump Next' })
-  vim.keymap.set({ 'i', 's' }, '<S-Tab>', function()
-    return vim.snippet.active { direction = -1 } and '<cmd>lua vim.snippet.jump(-1)<cr>' or '<S-Tab>'
-  end, { expr = true, desc = 'Jump Previous' })
+  vim.keymap.set(
+    's',
+    '<Tab>',
+    function() return vim.snippet.active { direction = 1 } and '<cmd>lua vim.snippet.jump(1)<cr>' or '<Tab>' end,
+    { expr = true, desc = 'Jump Next' }
+  )
+  vim.keymap.set(
+    { 'i', 's' },
+    '<S-Tab>',
+    function() return vim.snippet.active { direction = -1 } and '<cmd>lua vim.snippet.jump(-1)<cr>' or '<S-Tab>' end,
+    { expr = true, desc = 'Jump Previous' }
+  )
 end
 -- inc rename
 
-vim.keymap.set('n', '<leader>cr', function()
-  return ':IncRename ' .. vim.fn.expand '<cword>'
-end, { expr = true, desc = 'Rename' })
+vim.keymap.set('n', '<leader>cr', function() return ':IncRename ' .. vim.fn.expand '<cword>' end, { expr = true, desc = 'Rename' })
 
 -- NOTE: END OF LINE CHARS
 vim.opt.fillchars = { eob = ' ' }
@@ -1264,9 +1269,7 @@ require('supermaven-nvim').setup {
   log_level = 'info', -- set to "off" to disable logging completely
   disable_inline_completion = false, -- disables inline completion for use with cmp
   disable_keymaps = false, -- disables built in keymaps for more manual control
-  condition = function()
-    return false
-  end, -- condition to check for stopping supermaven, `true` means to stop supermaven when the condition is true. }
+  condition = function() return false end, -- condition to check for stopping supermaven, `true` means to stop supermaven when the condition is true. }
 }
 
 vim.keymap.set('n', '<leader>aa', '<cmd>ArduinoAttach<cr>', { desc = 'attach to a device' })
@@ -1333,9 +1336,7 @@ vim.keymap.set('n', '<leader>nn', function()
       local num = foldername:match '^(%d%d%d)%-' -- ^ = start of string
       if num then
         local n = tonumber(num)
-        if n > highest then
-          highest = n
-        end
+        if n > highest then highest = n end
       end
     end
     return highest
@@ -1404,9 +1405,7 @@ local function git_root()
   local file_dir = vim.fn.expand '%:p:h'
   local cmd = string.format('cd %s && git rev-parse --show-toplevel 2>/dev/null', vim.fn.shellescape(file_dir))
   local result = vim.fn.systemlist(cmd)[1]
-  if result and result ~= '' then
-    return result
-  end
+  if result and result ~= '' then return result end
   return nil
 end
 
@@ -1419,9 +1418,7 @@ end
 -- Insert \incfig[size]{filename} with size prompt
 local function insert_incfig(filename)
   vim.ui.input({ prompt = 'Enter size for \\incfig[size]{file} (0 < size <= 1): ' }, function(size)
-    if not size or size == '' then
-      return
-    end
+    if not size or size == '' then return end
     local num = tonumber(size)
     if not num or num <= 0 or num > 1 then
       print 'Invalid size! Must be >0 and <=1'
@@ -1463,15 +1460,11 @@ local function open_or_create_inkscape_svg()
           actions.close(prompt_bufnr)
 
           local template_path = vim.fn.expand '~/git/Clase/templates-inkscape/cross.svg'
-          if not selection then
-            return
-          end
+          if not selection then return end
 
           if selection[1] == '▶ New file' then
             vim.ui.input({ prompt = 'Enter new SVG file name: ' }, function(input)
-              if not input or input == '' then
-                return
-              end
+              if not input or input == '' then return end
               local file_path = images_dir .. '/' .. input .. '.svg'
               vim.fn.system { 'cp', template_path, file_path }
               spawn_inkscape(file_path)
@@ -1487,9 +1480,7 @@ local function open_or_create_inkscape_svg()
               'Do nothing',
             }
             vim.ui.select(options, { prompt = 'File exists, choose action:' }, function(opt)
-              if not opt then
-                return
-              end
+              if not opt then return end
               if opt == 'Open in Inkscape + insert \\incfig' then
                 spawn_inkscape(file_path)
                 insert_incfig(filename)
@@ -1554,9 +1545,7 @@ vim.diagnostic.config {
 vim.o.updatetime = 250
 
 vim.api.nvim_create_autocmd('CursorHold', {
-  callback = function()
-    vim.diagnostic.open_float(nil, { focus = false })
-  end,
+  callback = function() vim.diagnostic.open_float(nil, { focus = false }) end,
 })
 
 vim.filetype.add { extension = { ino = 'cpp' } }
