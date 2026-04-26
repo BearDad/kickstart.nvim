@@ -1,17 +1,16 @@
 return {
   {
-    "lervag/vimtex",
-    lazy = false, -- we don't want to lazy load VimTeX
-    -- tag = "v2.15", -- uncomment to pin to a specific release
+    'lervag/vimtex',
+    lazy = false,
     init = function()
-      -- VimTeX configuration goes here, e.g.
-      vim.g.vimtex_view_general_viewer = ""
-      vim.g.vimtex_view_general_options = ""
-      vim.g.vimtex_view_method = ""
-      vim.g.vimtex_compiler_method = "latexmk"
-      vim.g.vimtex_view_general_options = '--unique file:@pdf""#src:@line@tex'
-      vim.g.tex_conceal = "abdmg"
-      vim.g.tex_flavor = "latex"
+      -- ==============================
+      -- Basic VimTeX settings
+      -- ==============================
+      vim.g.vimtex_compiler_method = 'latexmk'
+      vim.g.vimtex_view_method = 'zathura' -- PDF viewer
+      vim.g.vimtex_view_automatic = 0 -- disable default auto-open
+      vim.g.tex_conceal = 'abdmg'
+      vim.g.tex_flavor = 'latex'
       vim.g.vimtex_syntax_conceal = {
         accents = true,
         ligatures = true,
@@ -27,6 +26,38 @@ return {
         sections = true,
         styles = true,
       }
+
+      -- ==============================
+      -- Compiler setup with build folder
+      -- ==============================
+      vim.g.vimtex_compiler_latexmk = {
+        executable = 'latexmk',
+        options = {
+          '-pdf',
+          '-shell-escape',
+          '-outdir=build', -- per-note build folder
+          '-verbose',
+          '-file-line-error',
+          '-interaction=nonstopmode',
+        },
+      }
+
+      -- ==============================
+      -- Custom PDF open after compile (for -outdir=build)
+      -- ==============================
+      vim.cmd [[
+augroup VimtexBuildDir
+  autocmd!
+  autocmd User VimtexEventCompileSuccess lua require('vimtex_build_pdf').open_pdf()
+augroup END
+]]
+      vim.g.vimtex_view_general_options = function()
+        local texfile = vim.fn.expand '%:p'
+        local pdffile = vim.fn.expand '%:p:h' .. '/build/' .. vim.fn.expand '%:t:r' .. '.pdf'
+        return '--synctex-forward @line:@col:' .. texfile .. ' ' .. pdffile
+      end
     end,
   },
+
+  vim.api.nvim_set_keymap('n', '<leader>lv', [[:lua require('vimtex_build_pdf').open_pdf()<CR>]], { noremap = true, silent = true }),
 }

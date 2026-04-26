@@ -1,21 +1,24 @@
 return {
-  "stevearc/oil.nvim",
+  'stevearc/oil.nvim',
   config = function()
-    local oil = require("oil")
-    oil.setup({
+    local oil = require 'oil'
+    oil.setup {
       buf_options = {
         buflisted = false,
-        bufhidden = "hide",
+        bufhidden = 'hide',
       },
 
       skip_confirm_for_simple_edits = true,
-
+      default_file_explorer = true,
+      columns = { 'icon', 'permissions', 'size', 'mtime' }, -- Netrw-like columns
+      win_options = { winbar = '%f' }, -- Show path in winbar
+      delete_to_trash = vim.fn.has 'mac' == 1, -- Trash on macOS
       view_options = {
         -- Show files and directories that start with "."
         show_hidden = true,
         -- This function defines what is considered a "hidden" file
         is_hidden_file = function(name, bufnr)
-          return vim.startswith(name, ".")
+          return vim.startswith(name, '.')
         end,
         -- This function defines what will never be shown, even when `show_hidden` is set
         is_always_hidden = function(name, bufnr)
@@ -29,8 +32,8 @@ return {
         sort = {
           -- sort order can be "asc" or "desc"
           -- see :help oil-columns to see which columns are sortable
-          { "type", "asc" },
-          { "name", "asc" },
+          { 'type', 'asc' },
+          { 'name', 'asc' },
         },
       },
       float = {
@@ -38,23 +41,23 @@ return {
         padding = 4,
         max_width = 100,
         max_height = 15,
-        border = "rounded",
+        border = 'rounded',
         win_options = {
           winblend = 0,
         },
         -- optionally override the oil buffers window title with custom function: fun(winid: integer): string
         get_win_title = nil,
         -- preview_split: Split direction: "auto", "left", "right", "above", "below".
-        preview_split = "auto",
+        preview_split = 'auto',
         -- This is the config that will be passed to nvim_open_win.
         -- Change values here to customize the layout
         override = function(conf)
           return conf
         end,
       },
-    })
+    }
 
-    vim.keymap.set("n", "-", "<cmd>Oil<cr>", { desc = "Open oil" })
-    vim.keymap.set("n", "<localleader>-", oil.toggle_float, {})
+    vim.keymap.set('n', '-', '<cmd>Oil<cr>', { desc = 'Open oil' })
+    vim.keymap.set('n', '<localleader>-', oil.toggle_float, {})
   end,
 }
