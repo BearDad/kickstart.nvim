@@ -505,7 +505,21 @@ require('lazy').setup({
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', lazy = false, opts = {} },
+      {
+        'j-hui/fidget.nvim',
+        opts = {
+          progress = {
+            suppress_on_insert = true,
+            ignore_done_already = true,
+            -- ignore = { 'basedpyright' }, -- skip basedpyright entirely
+          },
+          notification = {
+            window = {
+              winblend = 0,
+            },
+          },
+        },
+      },
 
       -- Allows extra capabilities provided by nvim-cmp
       -- 'hrsh7th/cmp-nvim-lsp',
@@ -782,7 +796,7 @@ require('lazy').setup({
     'saghen/blink.cmp',
     event = 'VimEnter',
     version = '1.*',
-    build = "cargo build --release",
+    build = 'cargo build --release',
     dependencies = {
       -- Snippet Engine
       {
