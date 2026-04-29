@@ -919,7 +919,7 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      -- vim.cmd.colorscheme 'tokyonight-night'
     end,
   },
 
@@ -1090,13 +1090,13 @@ require('lazy').setup({
 --
 ---- Default options:
 require('kanagawa').setup {
-  compile = false, -- enable compiling the colorscheme
+  compile = true, -- enable compiling the colorscheme
   undercurl = true, -- enable undercurls
-  commentStyle = { italic = true },
-  functionStyle = {},
-  keywordStyle = { italic = true },
-  statementStyle = { bold = true },
-  typeStyle = {},
+commentStyle = { italic = true },
+functionStyle = {},
+keywordStyle = {},
+statementStyle = { bold = true },
+typeStyle = { italic = true },
   transparent = true, -- do not set background color
   dimInactive = true, -- dim inactive window `:h hl-NormalNC`
   terminalColors = true, -- define vim.g.terminal_color_{0,17}
@@ -1110,11 +1110,15 @@ require('kanagawa').setup {
   },
   overrides = function(colors)
     local theme = colors.theme
+    local makeDiagnosticColor = function(color)
+      local c = require 'kanagawa.lib.color'
+      return { fg = color, bg = c(color):blend(theme.ui.bg, 0.95):to_hex() }
+    end
     return {
       NormalFloat = { bg = 'none' },
       FloatBorder = { bg = 'none' },
       FloatTitle = { bg = 'none' },
-
+      TelescopeBorder = { fg = theme.ui.bg_m1, bg = theme.ui.bg_m1 },
       -- Save an hlgroup with dark background and dimmed foreground
       -- so that you can use it where your still want darker windows.
       -- E.g.: autocmd TermOpen * setlocal winhighlight=Normal:NormalDark
@@ -1126,17 +1130,22 @@ require('kanagawa').setup {
       MasonNormal = { bg = theme.ui.bg_m3, fg = theme.ui.fg_dim },
 
       TelescopeTitle = { fg = theme.ui.special, bold = true },
-      TelescopePromptNormal = { bg = theme.ui.bg_p1 },
       TelescopePromptBorder = { fg = theme.ui.bg_p1, bg = theme.ui.bg_p1 },
-      TelescopeResultsNormal = { fg = theme.ui.fg_dim, bg = theme.ui.bg_m1 },
       TelescopeResultsBorder = { fg = theme.ui.bg_m1, bg = theme.ui.bg_m1 },
-      TelescopePreviewNormal = { bg = theme.ui.bg_dim },
       TelescopePreviewBorder = { bg = theme.ui.bg_dim, fg = theme.ui.bg_dim },
+      TelescopePromptNormal = { bg = 'none' },
+      TelescopeResultsNormal = { bg = 'none' },
+      TelescopePreviewNormal = { bg = 'none' },
+
+      DiagnosticVirtualTextHint = makeDiagnosticColor(theme.diag.hint),
+      DiagnosticVirtualTextInfo = makeDiagnosticColor(theme.diag.info),
+      DiagnosticVirtualTextWarn = makeDiagnosticColor(theme.diag.warning),
+      DiagnosticVirtualTextError = makeDiagnosticColor(theme.diag.error),
     }
   end,
-  theme = 'dragon', -- Load "wave" theme
+  theme = 'wave', -- Load "wave" theme
   background = { -- map the value of 'background' option to a theme
-    dark = 'dragon', -- try "dragon" !
+    dark = 'wave', -- try "dragon" !
     light = 'lotus',
   },
 }
