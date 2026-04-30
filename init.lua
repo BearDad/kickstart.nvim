@@ -770,7 +770,6 @@ require('lazy').setup({
           c = true,
           cpp = true,
           tex = true,
-
         }
         if enabled_filetypes[vim.bo[bufnr].filetype] then
           return { timeout_ms = 500 }
@@ -1013,9 +1012,11 @@ require('lazy').setup({
 
         -- enables treesitter based folds
         -- for more info on folds see `:help folds`
-        -- vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-        -- vim.wo.foldmethod = 'expr'
-
+        vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+        vim.wo.foldmethod = 'expr'
+        vim.opt.foldlevel = 99
+        vim.opt.foldlevelstart = 99
+        vim.opt.foldtext = ''
         -- check if treesitter indentation is available for this language, and if so enable it
         -- in case there is no indent query, the indentexpr will fallback to the vim's built in one
         local has_indent_query = vim.treesitter.query.get(language, 'indents') ~= nil
@@ -1028,7 +1029,7 @@ require('lazy').setup({
       vim.api.nvim_create_autocmd('FileType', {
         callback = function(args)
           local buf, filetype = args.buf, args.match
-
+          if filetype == 'tex' or filetype == 'latex' then return end
           local language = vim.treesitter.language.get_lang(filetype)
           if not language then return end
 
@@ -1107,11 +1108,11 @@ require('lazy').setup({
 require('kanagawa').setup {
   compile = true, -- enable compiling the colorscheme
   undercurl = true, -- enable undercurls
-commentStyle = { italic = true },
-functionStyle = {},
-keywordStyle = {},
-statementStyle = { bold = true },
-typeStyle = { italic = true },
+  commentStyle = { italic = true },
+  functionStyle = {},
+  keywordStyle = {},
+  statementStyle = { bold = true },
+  typeStyle = { italic = true },
   transparent = true, -- do not set background color
   dimInactive = true, -- dim inactive window `:h hl-NormalNC`
   terminalColors = true, -- define vim.g.terminal_color_{0,17}
