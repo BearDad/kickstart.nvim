@@ -665,6 +665,25 @@ require('lazy').setup({
       })
 
       vim.lsp.enable 'arduino_language_server'
+      -- TypeScript & JavaScript LSP
+      vim.lsp.config('ts_ls', {
+        settings = {
+          typescript = {
+            inlayHints = {
+              includeInlayParameterNameHints = 'all',
+              includeInlayFunctionParameterTypeHints = true,
+            },
+          },
+          javascript = {
+            inlayHints = {
+              includeInlayParameterNameHints = 'all',
+              includeInlayFunctionParameterTypeHints = true,
+            },
+          },
+        },
+      })
+      vim.lsp.enable 'ts_ls'
+      vim.lsp.enable 'marksman'
 
       local servers = {
         -- clangd = {},
