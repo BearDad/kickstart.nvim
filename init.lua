@@ -1411,7 +1411,7 @@ vim.keymap.set('n', '<leader>nn', function()
   local cwd = vim.fn.getcwd()
   local buf_dir = vim.fn.expand '%:p:h'
 
-  local function create_note(base_dir)
+  local function create_note(base_dir, use_template)
     local function get_highest_number()
       local highest = 0
       local folders = vim.fn.systemlist {
@@ -1446,20 +1446,12 @@ vim.keymap.set('n', '<leader>nn', function()
 
     vim.fn.mkdir(folder, 'p')
     if vim.fn.filereadable(texfile) == 0 then
-      if vim.fn.filereadable(template) == 1 then
+      if use_template and vim.fn.filereadable(template) == 1 then
         vim.fn.system { 'cp', template, texfile }
         print('Created → ' .. texfile)
       else
-        vim.fn.writefile({
-          '\\documentclass{article}',
-          '\\begin{document}',
-          '\\title{' .. name .. '}',
-          '\\date{' .. date .. '}',
-          '\\maketitle',
-          '',
-          '\\end{document}',
-        }, texfile)
-        print('Created minimal → ' .. texfile)
+        vim.fn.writefile({}, texfile)
+        print('Created → ' .. texfile)
       end
     end
     vim.cmd.edit(vim.fn.fnameescape(texfile))
@@ -1474,7 +1466,7 @@ vim.keymap.set('n', '<leader>nn', function()
   local in_chapter = not in_sections and buf_dir:match '/chapters/[^/]+$' ~= nil
 
   if in_sections then
-    create_note(buf_dir)
+    create_note(buf_dir, false)
   elseif in_chapter then
     local sections_dir = buf_dir .. '/sections'
     local has_sections = vim.fn.isdirectory(sections_dir) == 1
@@ -1484,7 +1476,7 @@ vim.keymap.set('n', '<leader>nn', function()
           print 'Aborted'
           return
         end
-        create_note(choice == 'sections/' and sections_dir or buf_dir)
+        create_note(choice == 'sections/' and sections_dir or buf_dir, false)
       end)
     else
       vim.ui.select({ 'this chapter', 'create sections/' }, { prompt = 'Save to:' }, function(choice)
@@ -1494,14 +1486,14 @@ vim.keymap.set('n', '<leader>nn', function()
         end
         if choice == 'create sections/' then
           vim.fn.mkdir(sections_dir, 'p')
-          create_note(sections_dir)
+          create_note(sections_dir, false)
         else
-          create_note(buf_dir)
+          create_note(buf_dir, false)
         end
       end)
     end
   elseif not has_root_tex then
-    create_note(cwd)
+    create_note(cwd, true)
   elseif has_root_tex and not has_chapters then
     vim.ui.select({ 'create chapters/', 'standalone note' }, { prompt = 'No chapters/ found:' }, function(choice)
       if not choice then
@@ -1510,13 +1502,23 @@ vim.keymap.set('n', '<leader>nn', function()
       end
       if choice == 'create chapters/' then
         vim.fn.mkdir(chapters_dir, 'p')
-        create_note(chapters_dir)
+        create_note(chapters_dir, false)
       else
-        create_note(note_dir)
+        create_note(note_dir, true)
       end
     end)
   else
-    create_note(chapters_dir)
+    vim.ui.select({ 'chapters/', 'standalone note' }, { prompt = 'Save to:' }, function(choice)
+      if not choice then
+        print 'Aborted'
+        return
+      end
+      if choice == 'standalone note' then
+        create_note(note_dir, true)
+      else
+        create_note(chapters_dir, false)
+      end
+    end)
   end
 end, { desc = 'Zettel: New numbered note' })
 -------------------------------------------------------------------------------
