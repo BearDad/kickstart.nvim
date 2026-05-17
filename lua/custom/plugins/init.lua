@@ -72,12 +72,12 @@ return {
     event = 'VeryLazy',
     enabled = vim.fn.has 'nvim-0.10.0' == 1,
   },
-  {
-    'NvChad/nvim-colorizer.lua',
-    event = 'BufReadPre',
-    opts = { -- set to setup table
-    },
-  },
+  -- {
+  --   'NvChad/nvim-colorizer.lua',
+  --   event = 'BufReadPre',
+  --   opts = { -- set to setup table
+  --   },
+  -- },
   {
     'roobert/tailwindcss-colorizer-cmp.nvim',
     -- optionally, override the default options:

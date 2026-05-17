@@ -682,8 +682,49 @@ require('lazy').setup({
           },
         },
       })
+      -- latex
+      vim.lsp.config('texlab', {
+        settings = {
+          texlab = {
+            chktex = {
+              onEdit = false,
+              onSave = true,
+            },
+            inlayHints = {
+              labelDefinitions = true,
+              labelReferences = true,
+            },
+          },
+        },
+      })
+
+      vim.lsp.config('cssls', {
+        settings = {
+          css = { validate = true },
+        },
+      })
+
+      vim.lsp.config('jsonls', {
+        filetypes = { 'json', 'jsonc' },
+        get_language_id = function(_, filetype)
+          if filetype == 'jsonc' then return 'jsonc' end
+          return 'json'
+        end,
+        settings = {
+          json = {
+            validate = { enable = true },
+          },
+        },
+        on_attach = function(client, bufnr)
+          if vim.bo[bufnr].filetype == 'jsonc' then client.server_capabilities.diagnosticProvider = false end
+        end,
+      })
+      vim.lsp.enable 'cssls'
+      vim.lsp.enable 'texlab'
       vim.lsp.enable 'ts_ls'
       vim.lsp.enable 'marksman'
+      vim.lsp.enable 'fish_lsp'
+      vim.lsp.enable 'jsonls'
 
       local servers = {
         -- clangd = {},
@@ -811,6 +852,7 @@ require('lazy').setup({
         css = { 'prettierd', 'prettier', stop_after_first = true },
         html = { 'prettierd', 'prettier', stop_after_first = true },
         json = { 'prettierd', 'prettier', stop_after_first = true },
+        jsonc = { 'prettierd', 'prettier', stop_after_first = true },
         yaml = { 'prettierd', 'prettier', stop_after_first = true },
         markdown = { 'prettierd', 'prettier', stop_after_first = true },
         c = { 'clang_format' },
@@ -867,6 +909,11 @@ require('lazy').setup({
               require('luasnip').filetype_extend('sh', { 'shelldoc' })
             end,
           },
+          -- {
+          --   'iurimateus/luasnip-latex-snippets.nvim',
+          --   ft = { 'tex', 'plaintex' },
+          --   config = function() require('luasnip-latex-snippets').setup { use_treesitter = false } end,
+          -- },
         },
         opts = {},
       },
@@ -1267,39 +1314,39 @@ vim.keymap.set('n', '<leader>cr', function() return ':IncRename ' .. vim.fn.expa
 -- NOTE: END OF LINE CHARS
 vim.opt.fillchars = { eob = ' ' }
 
-require('colorizer').setup {
-  filetypes = { '*' },
-  user_default_options = {
-    names = true, -- "Name" codes like Blue or blue
-    RGB = true, -- #RGB hex codes
-    RRGGBB = true, -- #RRGGBB hex codes
-    RRGGBBAA = true, -- #RRGGBBAA hex codes
-    AARRGGBB = true, -- 0xAARRGGBB hex codes
-    rgb_fn = true, -- CSS rgb() and rgba() functions
-    hsl_fn = true, -- CSS hsl() and hsla() functions
-    css = true, -- Enable all CSS features: rgb_fn, hsl_fn, names, RGB, RRGGBB
-    css_fn = true, -- Enable all CSS *functions*: rgb_fn, hsl_fn
-    -- Highlighting mode.  'background'|'foreground'|'virtualtext'
-    mode = 'background', -- Set the display mode
-    -- Tailwind colors.  boolean|'normal'|'lsp'|'both'.  True is same as normal
-    tailwind = 'both', -- Enable tailwind colors
-    -- parsers can contain values used in |user_default_options|
-    sass = { enable = true, parsers = { 'css' } }, -- Enable sass colors
-    -- Virtualtext character to use
-    virtualtext = '■',
-    -- Display virtualtext inline with color
-    virtualtext_inline = true,
-    -- Virtualtext highlight mode: 'background'|'foreground'
-    virtualtext_mode = 'foreground',
-    -- update color values even if buffer is not focused
-    -- example use: cmp_menu, cmp_docs
-    always_update = true,
-  },
-  -- all the sub-options of filetypes apply to buftypes
-  buftypes = {},
-  -- Boolean | List of usercommands to enable
-  user_commands = true, -- Enable all or some usercommands
-}
+-- require('colorizer').setup {
+--   filetypes = { '*' },
+--   user_default_options = {
+--     names = true, -- "Name" codes like Blue or blue
+--     RGB = true, -- #RGB hex codes
+--     RRGGBB = true, -- #RRGGBB hex codes
+--     RRGGBBAA = true, -- #RRGGBBAA hex codes
+--     AARRGGBB = true, -- 0xAARRGGBB hex codes
+--     rgb_fn = true, -- CSS rgb() and rgba() functions
+--     hsl_fn = true, -- CSS hsl() and hsla() functions
+--     css = true, -- Enable all CSS features: rgb_fn, hsl_fn, names, RGB, RRGGBB
+--     css_fn = true, -- Enable all CSS *functions*: rgb_fn, hsl_fn
+--     -- Highlighting mode.  'background'|'foreground'|'virtualtext'
+--     mode = 'virtualtext', -- Set the display mode
+--     -- Tailwind colors.  boolean|'normal'|'lsp'|'both'.  True is same as normal
+--     tailwind = 'both', -- Enable tailwind colors
+--     -- parsers can contain values used in |user_default_options|
+--     sass = { enable = true, parsers = { 'css' } }, -- Enable sass colors
+--     -- Virtualtext character to use
+--     virtualtext = '■',
+--     -- Display virtualtext inline with color
+--     virtualtext_inline = true,
+--     -- Virtualtext highlight mode: 'background'|'foreground'
+--     virtualtext_mode = 'background',
+--     -- update color values even if buffer is not focused
+--     -- example use: cmp_menu, cmp_docs
+--     always_update = true,
+--   },
+--   -- all the sub-options of filetypes apply to buftypes
+--   buftypes = {},
+--   -- Boolean | List of usercommands to enable
+--   user_commands = true, -- Enable all or some usercommands
+-- }
 
 vim.opt.termguicolors = true
 vim.api.nvim_set_hl(0, 'CursorLine', { bg = '#191724' }) -- Use a darker or blended color
@@ -1360,75 +1407,118 @@ vim.keymap.set('n', '<leader>nn', function()
     return
   end
   name = string.lower(name):gsub('%s+', '-'):gsub('[^%w%-]', '')
-
   local date = os.date '%Y-%m-%d'
   local cwd = vim.fn.getcwd()
+  local buf_dir = vim.fn.expand '%:p:h'
 
-  -- Perfect base_dir (already correct in your version)
-  local base_dir = cwd
-  if vim.fn.isdirectory(cwd .. '/chapters') == 1 then
-    base_dir = cwd .. '/chapters'
-  elseif #vim.fn.glob(cwd .. '/*.tex', false, true) > 0 then
-    base_dir = vim.fn.fnamemodify(cwd, ':h')
-    print('Inside existing note → using parent:', base_dir)
-  end
+  local function create_note(base_dir)
+    local function get_highest_number()
+      local highest = 0
+      local folders = vim.fn.systemlist {
+        'find',
+        base_dir,
+        '-maxdepth',
+        '1',
+        '-type',
+        'd',
+        '-name',
+        '[0-9][0-9][0-9]-*',
+        '-exec',
+        'basename',
+        '{}',
+        ';',
+      }
+      for _, foldername in ipairs(folders) do
+        local num = foldername:match '^(%d%d%d)%-'
+        if num then
+          local n = tonumber(num)
+          if n > highest then highest = n end
+        end
+      end
+      return highest
+    end
 
-  -- THIS IS THE ONLY THING THAT WAS WRONG → now 100% correct
-  local function get_highest_number()
-    local highest = 0
-    -- Use basename so we only see the folder name, not the full path
-    local folders = vim.fn.systemlist {
-      'find',
-      base_dir,
-      '-type',
-      'd',
-      '-name',
-      '[0-9][0-9][0-9]-*',
-      '-exec',
-      'basename',
-      '{}',
-      ';',
-    }
+    local next_num = get_highest_number() + 1
+    local num_str = string.format('%03d', next_num)
+    local folder = base_dir .. '/' .. num_str .. '-' .. date .. '-' .. name
+    local texfile = folder .. '/' .. num_str .. '-' .. date .. '-' .. name .. '.tex'
+    local template = vim.fn.expand '~/git/Clase/template/template.tex'
 
-    for _, foldername in ipairs(folders) do
-      local num = foldername:match '^(%d%d%d)%-' -- ^ = start of string
-      if num then
-        local n = tonumber(num)
-        if n > highest then highest = n end
+    vim.fn.mkdir(folder, 'p')
+    if vim.fn.filereadable(texfile) == 0 then
+      if vim.fn.filereadable(template) == 1 then
+        vim.fn.system { 'cp', template, texfile }
+        print('Created → ' .. texfile)
+      else
+        vim.fn.writefile({
+          '\\documentclass{article}',
+          '\\begin{document}',
+          '\\title{' .. name .. '}',
+          '\\date{' .. date .. '}',
+          '\\maketitle',
+          '',
+          '\\end{document}',
+        }, texfile)
+        print('Created minimal → ' .. texfile)
       end
     end
-    return highest
+    vim.cmd.edit(vim.fn.fnameescape(texfile))
   end
 
-  local next_num = get_highest_number() + 1
-  local num_str = string.format('%03d', next_num)
+  local chapters_dir = cwd .. '/chapters'
+  local has_root_tex = #vim.fn.glob(cwd .. '/*.tex', false, true) > 0
+  local has_chapters = vim.fn.isdirectory(chapters_dir) == 1
+  local note_dir = vim.fn.fnamemodify(cwd, ':h')
 
-  local folder = base_dir .. '/' .. num_str .. '-' .. date .. '-' .. name
-  local texfile = folder .. '/' .. num_str .. '-' .. date .. '-' .. name .. '.tex'
-  local template = vim.fn.expand '~/git/Clase/template/template.tex'
+  local in_sections = buf_dir:match '/chapters/[^/]+/sections$' ~= nil
+  local in_chapter = not in_sections and buf_dir:match '/chapters/[^/]+$' ~= nil
 
-  vim.fn.mkdir(folder, 'p')
-
-  if vim.fn.filereadable(texfile) == 0 then
-    if vim.fn.filereadable(template) == 1 then
-      vim.fn.system { 'cp', template, texfile }
-      print('Created → ' .. texfile)
+  if in_sections then
+    create_note(buf_dir)
+  elseif in_chapter then
+    local sections_dir = buf_dir .. '/sections'
+    local has_sections = vim.fn.isdirectory(sections_dir) == 1
+    if has_sections then
+      vim.ui.select({ 'this chapter', 'sections/' }, { prompt = 'Save to:' }, function(choice)
+        if not choice then
+          print 'Aborted'
+          return
+        end
+        create_note(choice == 'sections/' and sections_dir or buf_dir)
+      end)
     else
-      vim.fn.writefile({
-        '\\documentclass{article}',
-        '\\begin{document}',
-        '\\title{' .. name .. '}',
-        '\\date{' .. date .. '}',
-        '\\maketitle',
-        '',
-        '\\end{document}',
-      }, texfile)
-      print('Created minimal → ' .. texfile)
+      vim.ui.select({ 'this chapter', 'create sections/' }, { prompt = 'Save to:' }, function(choice)
+        if not choice then
+          print 'Aborted'
+          return
+        end
+        if choice == 'create sections/' then
+          vim.fn.mkdir(sections_dir, 'p')
+          create_note(sections_dir)
+        else
+          create_note(buf_dir)
+        end
+      end)
     end
+  elseif not has_root_tex then
+    create_note(cwd)
+  elseif has_root_tex and not has_chapters then
+    vim.ui.select({ 'create chapters/', 'standalone note' }, { prompt = 'No chapters/ found:' }, function(choice)
+      if not choice then
+        print 'Aborted'
+        return
+      end
+      if choice == 'create chapters/' then
+        vim.fn.mkdir(chapters_dir, 'p')
+        create_note(chapters_dir)
+      else
+        create_note(note_dir)
+      end
+    end)
+  else
+    create_note(chapters_dir)
   end
-
-  vim.cmd.edit(vim.fn.fnameescape(texfile))
-end, { desc = 'Zettel: New numbered note — NOW IT REALLY WORKS' })
+end, { desc = 'Zettel: New numbered note' })
 -------------------------------------------------------------------------------
 --  Modify nvim notify
 -------------------------------------------------------------------------------

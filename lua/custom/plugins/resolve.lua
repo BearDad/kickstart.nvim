@@ -1,5 +1,8 @@
-return {
-  'spacedentist/resolve.nvim',
-  event = { 'BufReadPre', 'BufNewFile' },
-  opts = {},
-}
+-- return {
+--   'spacedentist/resolve.nvim',
+--   event = { 'BufReadPre', 'BufNewFile' },
+--   opts = {},
+-- }
+--
+--
+return {}
