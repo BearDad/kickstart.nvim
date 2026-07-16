@@ -1,6 +1,4 @@
---[[
-
-=====================================================================
+--[[ =====================================================================
 ==================== READ THIS BEFORE CONTINUING ====================
 =====================================================================
 ========                                    .-----.          ========
@@ -634,6 +632,14 @@ require('lazy').setup({
       })
       vim.lsp.enable 'gdscript'
 
+      vim.api.nvim_create_autocmd('LspAttach', {
+        callback = function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if client and client:supports_method 'textDocument/inlayHint' then vim.lsp.inlay_hint.enable(true, { bufnr = args.buf }) end
+        end,
+      })
+      -- vim.keymap.set('n', '<leader>th', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end, { desc = 'Toggle inlay hints' })
+
       vim.lsp.config('basedpyright', {
         settings = {
           basedpyright = {
@@ -643,6 +649,12 @@ require('lazy').setup({
               useLibraryCodeForTypes = true,
               autoImportCompletions = true,
               diagnosticMode = 'workspace', -- sobreescribe el "openFilesOnly" del default
+              inlayHints = {
+                variableTypes = true,
+                callArgumentNames = true,
+                functionReturnTypes = true,
+                genericTypes = false,
+              },
             },
           },
         },
@@ -665,6 +677,15 @@ require('lazy').setup({
       })
 
       vim.lsp.enable 'arduino_language_server'
+      -- C/C++ LSP
+      vim.lsp.config('clangd', {
+        cmd = { 'clangd', '--query-driver=**/xtensa-esp32-elf-*' },
+        filetypes = { 'c', 'cpp' },
+        root_markers = { 'compile_commands.json', '.git' },
+      })
+
+      vim.lsp.enable 'clangd'
+
       -- TypeScript & JavaScript LSP
       vim.lsp.config('ts_ls', {
         settings = {
@@ -1050,7 +1071,10 @@ require('lazy').setup({
       -- default behavior. For example, here we set the section for
       -- cursor location to LINE:COLUMN
       ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function() return '%2l:%-2v' end
+      statusline.section_location = function()
+        local note = require('note_status').status()
+        return (note ~= '' and note .. ' ' or '') .. '%2l:%-2v'
+      end
 
       -- ... and there is more!
       --  Check out: https://github.com/nvim-mini/mini.nvim

@@ -1,23 +1,31 @@
 local M = {}
-M.last_compile = 0
+M.compiling = false
+
+-- VimTeX exposes compile state via User autocmds (the b:vimtex.compiler.status
+-- buffer var, not a g: var). Drive a simple flag off those events.
+local group = vim.api.nvim_create_augroup('NoteStatusVimtex', { clear = true })
+vim.api.nvim_create_autocmd('User', {
+  group = group,
+  pattern = 'VimtexEventCompiling',
+  callback = function() M.compiling = true end,
+})
+vim.api.nvim_create_autocmd('User', {
+  group = group,
+  pattern = { 'VimtexEventCompileSuccess', 'VimtexEventCompileFailed', 'VimtexEventCompileStopped' },
+  callback = function() M.compiling = false end,
+})
 
 function M.status()
   if vim.bo.filetype ~= 'tex' then
     return ''
   end
 
-  local texfile = vim.fn.expand '%:p'
   local pdffile = vim.fn.expand '%:p:h' .. '/build/' .. vim.fn.expand '%:t:r' .. '.pdf'
-  local compiling = vim.g['vimtex#compiler#status'] or 0
 
-  if compiling == 1 then
-    M.last_compile = os.time()
+  if M.compiling then
     return '⏳'
   elseif vim.fn.filereadable(pdffile) == 1 then
     return '✅'
-  elseif os.time() - M.last_compile <= 2 then
-    -- Show compiling icon briefly even if VimTeX finished
-    return '⏳'
   else
     return '❌'
   end

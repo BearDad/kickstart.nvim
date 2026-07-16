@@ -33,7 +33,7 @@ return {
       vim.g.vimtex_compiler_latexmk = {
         executable = 'latexmk',
         options = {
-          '-lualatex',
+          '-pdf',
           '-shell-escape',
           '-outdir=build', -- per-note build folder
           '-verbose',
